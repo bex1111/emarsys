@@ -1,10 +1,16 @@
 package org.github.duedategenerator;
 
+import org.github.duedategenerator.exception.NotWorkingDayException;
 import org.github.duedategenerator.exception.OutOfWorkingHourException;
 import org.github.duedategenerator.exception.SubmitDateNullException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Stream;
 
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 import static java.util.Objects.isNull;
 
 public class DueDateCalculator {
@@ -15,6 +21,13 @@ public class DueDateCalculator {
         if (isAfterWorkHour(submitDate) || isBeforeWorkHour(submitDate)) {
             throw new OutOfWorkingHourException();
         }
+        if (isWeekend(submitDate.getDayOfWeek())) {
+            throw new NotWorkingDayException();
+        }
+    }
+
+    private boolean isWeekend(DayOfWeek dayOfWeek) {
+        return List.of(SATURDAY, SUNDAY).contains(dayOfWeek);
     }
 
     private boolean isBeforeWorkHour(LocalDateTime submitDate) {
