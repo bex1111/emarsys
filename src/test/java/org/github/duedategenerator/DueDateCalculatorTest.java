@@ -67,7 +67,7 @@ class DueDateCalculatorTest {
                 .isInstanceOf(TurnaroundTimeNullException.class);
     }
 
-    private static Stream<Arguments> resolveIssueProvider() {
+    private static Stream<Arguments> resolveIssueLessThanWorkingWeekProvider() {
         return Stream.of(
                 arguments(8L,
                         LocalDateTime.of(2023, 10, 9, 9, 0),
@@ -80,13 +80,40 @@ class DueDateCalculatorTest {
                         LocalDateTime.of(2023, 10, 10, 17, 0)),
                 arguments(20L,
                         LocalDateTime.of(2023, 10, 9, 9, 0),
-                        LocalDateTime.of(2023, 10, 11, 13, 0))
+                        LocalDateTime.of(2023, 10, 11, 13, 0)),
+                arguments(40L,
+                        LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 13, 17, 0))
         );
     }
 
     @ParameterizedTest
-    @MethodSource("resolveIssueProvider")
-    void resolveIssueEightHours(Long turnaroundTime, LocalDateTime submitDate, LocalDateTime resolvedIssueTime) {
+    @MethodSource("resolveIssueLessThanWorkingWeekProvider")
+    void resolveIssueLessThanWorkingWeek(Long turnaroundTime, LocalDateTime submitDate, LocalDateTime resolvedIssueTime) {
+        assertThat(dueDateCalculator
+                .calculate(submitDate, turnaroundTime)).isEqualTo(resolvedIssueTime);
+    }
+
+
+    private static Stream<Arguments> resolveIssueMoreThanWorkingWeekProvider() {
+        return Stream.of(
+                arguments(41L, LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 16, 10, 0)),
+                arguments(49L, LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 17, 10, 0)),
+                arguments(80L, LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 20, 17, 0)),
+                arguments(81L, LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 23, 10, 0)),
+                arguments(89L, LocalDateTime.of(2023, 10, 9, 9, 0),
+                        LocalDateTime.of(2023, 10, 24, 10, 0))
+        );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("resolveIssueMoreThanWorkingWeekProvider")
+    void resolveIssueMoreThanWorkingWeek(Long turnaroundTime, LocalDateTime submitDate, LocalDateTime resolvedIssueTime) {
         assertThat(dueDateCalculator
                 .calculate(submitDate, turnaroundTime)).isEqualTo(resolvedIssueTime);
     }

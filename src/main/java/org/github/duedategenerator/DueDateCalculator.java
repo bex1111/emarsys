@@ -32,6 +32,23 @@ public class DueDateCalculator {
     }
 
     private LocalDateTime calculateSubmitDateWithAdditionalDay(Long turnaroundTime, LocalDateTime submitDateWithAdditionalHours) {
+        var submitDateWithAdditionalDay = calculateAdditionalDay(turnaroundTime, submitDateWithAdditionalHours);
+        return resolveWeekend(turnaroundTime, submitDateWithAdditionalDay);
+    }
+
+    private LocalDateTime resolveWeekend(Long turnaroundTime, LocalDateTime submitDateWithAdditionalDay) {
+        long additionalDay = 0L;
+        if (turnaroundTime > 40) {
+            additionalDay += (turnaroundTime / 40) * 2;
+        }
+        if (turnaroundTime%40==0 && turnaroundTime>40)
+        {
+            additionalDay -= 2;
+        }
+        return submitDateWithAdditionalDay.plusDays(additionalDay);
+    }
+
+    private LocalDateTime calculateAdditionalDay(Long turnaroundTime, LocalDateTime submitDateWithAdditionalHours) {
         final long hours = calculateAdditionalHours(turnaroundTime);
         if (turnaroundTime <= 8) {
             return submitDateWithAdditionalHours.plusDays(0);
