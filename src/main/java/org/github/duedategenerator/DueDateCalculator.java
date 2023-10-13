@@ -14,7 +14,35 @@ import static java.time.DayOfWeek.SUNDAY;
 import static java.util.Objects.isNull;
 
 public class DueDateCalculator {
+
     public LocalDateTime calculate(LocalDateTime submitDate, Long turnaroundTime) {
+        validateSubmitDate(submitDate);
+        validateTurnaroundTime(turnaroundTime);
+        LocalDateTime submitDateWithAdditionalHours = calculateSubmitDateWithAdditionalHours(submitDate, turnaroundTime);
+        return calculateSubmitDateWithAdditionalDay(turnaroundTime, submitDateWithAdditionalHours);
+    }
+
+    private long calculateAdditionalHours(Long turnaroundTime) {
+        return turnaroundTime % 8;
+    }
+
+    private LocalDateTime calculateSubmitDateWithAdditionalHours(LocalDateTime submitDate, Long turnaroundTime) {
+        final long hours = calculateAdditionalHours(turnaroundTime);
+        return submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? 8 : hours);
+    }
+
+    private LocalDateTime calculateSubmitDateWithAdditionalDay(Long turnaroundTime, LocalDateTime submitDateWithAdditionalHours) {
+        final long hours = calculateAdditionalHours(turnaroundTime);
+        if (turnaroundTime <= 8) {
+            return submitDateWithAdditionalHours.plusDays(0);
+        }
+        if (hours == 0) {
+            return submitDateWithAdditionalHours.plusDays(turnaroundTime / 8 - 1);
+        }
+        return submitDateWithAdditionalHours.plusDays(turnaroundTime / 8);
+    }
+
+    private void validateSubmitDate(LocalDateTime submitDate) {
         if (isNull(submitDate)) {
             throw new SubmitDateNullException();
         }
@@ -24,18 +52,12 @@ public class DueDateCalculator {
         if (isWeekend(submitDate.getDayOfWeek())) {
             throw new NotWorkingDayException();
         }
+    }
+
+    private void validateTurnaroundTime(Long turnaroundTime) {
         if (isNull(turnaroundTime)) {
             throw new TurnaroundTimeNullException();
         }
-        long hours = turnaroundTime % 8;
-        LocalDateTime day = submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? 8 : hours);
-        if (turnaroundTime <= 8) {
-            return day.plusDays(0);
-        }
-        if (hours == 0) {
-            return day.plusDays(turnaroundTime / 8 - 1);
-        }
-        return day.plusDays(turnaroundTime / 8);
     }
 
     private boolean isWeekend(DayOfWeek dayOfWeek) {
