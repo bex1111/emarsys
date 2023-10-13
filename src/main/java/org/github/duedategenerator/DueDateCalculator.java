@@ -27,7 +27,15 @@ public class DueDateCalculator {
         if (isNull(turnaroundTime)) {
             throw new TurnaroundTimeNullException();
         }
-        return submitDate.plusHours(turnaroundTime);
+        long hours = turnaroundTime % 8;
+        LocalDateTime day = submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? 8 : hours);
+        if (turnaroundTime <= 8) {
+            return day.plusDays(0);
+        }
+        if (hours == 0) {
+            return day.plusDays(turnaroundTime / 8 - 1);
+        }
+        return day.plusDays(turnaroundTime / 8);
     }
 
     private boolean isWeekend(DayOfWeek dayOfWeek) {

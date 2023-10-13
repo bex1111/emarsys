@@ -33,14 +33,14 @@ class DueDateCalculatorTest {
     @Test
     void submitDateIsAfterFivePm() {
         assertThatThrownBy(() -> dueDateCalculator
-                .calculate(LocalDateTime.of(2023, 3, 3, 17, 1), null))
+                .calculate(LocalDateTime.of(2023, 10, 9, 17, 1), null))
                 .isInstanceOf(OutOfWorkingHourException.class);
     }
 
     @Test
     void submitDateIsAfterNineAm() {
         assertThatThrownBy(() -> dueDateCalculator
-                .calculate(LocalDateTime.of(2023, 3, 3, 8, 59), null))
+                .calculate(LocalDateTime.of(2023, 10, 9, 8, 59), null))
                 .isInstanceOf(OutOfWorkingHourException.class);
     }
 
@@ -61,14 +61,28 @@ class DueDateCalculatorTest {
     @Test
     void turnaroundTimeNull() {
         assertThatThrownBy(() -> dueDateCalculator
-                .calculate(LocalDateTime.of(2023, 3, 3, 10, 59), null))
+                .calculate(LocalDateTime.of(2023, 10, 9, 10, 59), null))
                 .isInstanceOf(TurnaroundTimeNullException.class);
     }
 
     @Test
-    void resolveIssueInTheDay() {
+    void resolveIssueEightHours() {
         assertThat(dueDateCalculator
-                .calculate(LocalDateTime.of(2023, 3, 3, 9, 0), 8L))
-                .isEqualTo(LocalDateTime.of(2023, 3, 3, 17, 0));
+                .calculate(LocalDateTime.of(2023, 10, 9, 9, 0), 8L))
+                .isEqualTo(LocalDateTime.of(2023, 10, 9, 17, 0));
+    }
+
+    @Test
+    void resolveIssueNineHours() {
+        assertThat(dueDateCalculator
+                .calculate(LocalDateTime.of(2023, 10, 9, 9, 0), 9L))
+                .isEqualTo(LocalDateTime.of(2023, 10, 10, 10, 0));
+    }
+
+    @Test
+    void resolveIssueSixTeenHours() {
+        assertThat(dueDateCalculator
+                .calculate(LocalDateTime.of(2023, 10, 9, 9, 0), 16L))
+                .isEqualTo(LocalDateTime.of(2023, 10, 10, 17, 0));
     }
 }
