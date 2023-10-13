@@ -3,12 +3,11 @@ package org.github.duedategenerator;
 import org.github.duedategenerator.exception.NotWorkingDayException;
 import org.github.duedategenerator.exception.OutOfWorkingHourException;
 import org.github.duedategenerator.exception.SubmitDateNullException;
+import org.github.duedategenerator.exception.TurnaroundTimeNullException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -18,21 +17,21 @@ class DueDateCalculatorTest {
 
     @Test
     void submitDateNull() {
-        assertThatThrownBy(() -> new DueDateCalculator().calculate(null))
+        assertThatThrownBy(() -> new DueDateCalculator().calculate(null, null))
                 .isInstanceOf(SubmitDateNullException.class);
     }
 
     @Test
     void submitDateIsAfterFivePm() {
         assertThatThrownBy(() -> new DueDateCalculator()
-                .calculate(LocalDateTime.of(2023,3,3,17,1)))
+                .calculate(LocalDateTime.of(2023,3,3,17,1), null))
                 .isInstanceOf(OutOfWorkingHourException.class);
     }
 
     @Test
     void submitDateIsAfterNineAm() {
         assertThatThrownBy(() -> new DueDateCalculator()
-                .calculate(LocalDateTime.of(2023,3,3,8,59)))
+                .calculate(LocalDateTime.of(2023,3,3,8,59), null))
                 .isInstanceOf(OutOfWorkingHourException.class);
     }
 
@@ -46,8 +45,14 @@ class DueDateCalculatorTest {
     @MethodSource("weekendLocalDateTimeProvider")
     void submitDateIsNotWorkDay(LocalDateTime localDateTime) {
         assertThatThrownBy(() -> new DueDateCalculator()
-                .calculate(localDateTime))
+                .calculate(localDateTime, null))
                 .isInstanceOf(NotWorkingDayException.class);
     }
 
+    @Test
+    void turnaroundTimeNull() {
+        assertThatThrownBy(() -> new DueDateCalculator()
+                .calculate(LocalDateTime.of(2023,3,3,8,59),null))
+                .isInstanceOf(TurnaroundTimeNullException.class);
+    }
 }

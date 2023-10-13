@@ -3,18 +3,18 @@ package org.github.duedategenerator;
 import org.github.duedategenerator.exception.NotWorkingDayException;
 import org.github.duedategenerator.exception.OutOfWorkingHourException;
 import org.github.duedategenerator.exception.SubmitDateNullException;
+import org.github.duedategenerator.exception.TurnaroundTimeNullException;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 import static java.util.Objects.isNull;
 
 public class DueDateCalculator {
-    public void calculate(LocalDateTime submitDate) {
+    public void calculate(LocalDateTime submitDate, Integer turnaroundTime) {
         if (isNull(submitDate)) {
             throw new SubmitDateNullException();
         }
@@ -23,6 +23,9 @@ public class DueDateCalculator {
         }
         if (isWeekend(submitDate.getDayOfWeek())) {
             throw new NotWorkingDayException();
+        }
+        if (isNull(turnaroundTime)) {
+            throw new TurnaroundTimeNullException();
         }
     }
 

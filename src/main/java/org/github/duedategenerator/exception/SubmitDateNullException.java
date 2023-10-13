@@ -1,4 +1,4 @@
 package org.github.duedategenerator.exception;
 
-public class SubmitDateNullException extends RuntimeException{
+public class SubmitDateNullException extends DueDateGeneratorException{
 }
