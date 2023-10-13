@@ -14,7 +14,7 @@ import static java.time.DayOfWeek.SUNDAY;
 import static java.util.Objects.isNull;
 
 public class DueDateCalculator {
-    public void calculate(LocalDateTime submitDate, Integer turnaroundTime) {
+    public LocalDateTime calculate(LocalDateTime submitDate, Long turnaroundTime) {
         if (isNull(submitDate)) {
             throw new SubmitDateNullException();
         }
@@ -27,6 +27,7 @@ public class DueDateCalculator {
         if (isNull(turnaroundTime)) {
             throw new TurnaroundTimeNullException();
         }
+        return submitDate.plusHours(turnaroundTime);
     }
 
     private boolean isWeekend(DayOfWeek dayOfWeek) {
