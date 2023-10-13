@@ -1,14 +1,16 @@
 package org.github.duedategenerator;
 
+import org.github.duedategenerator.exception.SubmitDateNullException;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class DueDateCalculatorTest {
+class DueDateCalculatorTest {
 
     @Test
-     void test(){
-            assertThat(true).isTrue();
+    void submitDateNull() {
+        assertThatThrownBy(() -> new DueDateCalculator().calculate(null))
+                .isInstanceOf(SubmitDateNullException.class);
     }
 
 }
