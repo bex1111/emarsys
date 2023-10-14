@@ -6,7 +6,6 @@ import org.github.duedategenerator.exception.SubmitDateNullException;
 import org.github.duedategenerator.exception.TurnaroundTimeNullException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDateTime;
@@ -14,7 +13,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class DueDateCalculatorTest {
 
@@ -35,7 +33,7 @@ class DueDateCalculatorTest {
 
     @Test
     void submitDateIsAfterNineAm() {
-        assertThatThrownBy(() ->   createDueDateCalculator(LocalDateTime.of(YEAR, 10, 9, 8, 59)))
+        assertThatThrownBy(() -> createDueDateCalculator(LocalDateTime.of(YEAR, 10, 9, 8, 59)))
                 .isInstanceOf(OutOfWorkingHourException.class);
     }
 
@@ -49,7 +47,7 @@ class DueDateCalculatorTest {
     @MethodSource("weekendLocalDateTimeProvider")
     void submitDateIsNotWorkDay(LocalDateTime localDateTime) {
 
-        assertThatThrownBy(() ->  createDueDateCalculator(localDateTime))
+        assertThatThrownBy(() -> createDueDateCalculator(localDateTime))
                 .isInstanceOf(NotWorkingDayException.class);
     }
 
@@ -60,58 +58,78 @@ class DueDateCalculatorTest {
                 .isInstanceOf(TurnaroundTimeNullException.class);
     }
 
-    private static Stream<Arguments> resolveIssueLessThanWorkingWeekProvider() {
+    private static Stream<DueDateCalculatorTestDto> resolveIssueLessThanWorkingWeekProvider() {
         return Stream.of(
-                arguments(8L,
+                new DueDateCalculatorTestDto(8L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 9, 17, 0)),
-                arguments(9L,
+                new DueDateCalculatorTestDto(9L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 10, 10, 0)),
-                arguments(16L,
+                new DueDateCalculatorTestDto(16L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 10, 17, 0)),
-                arguments(20L,
+                new DueDateCalculatorTestDto(20L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 11, 13, 0)),
-                arguments(40L,
+                new DueDateCalculatorTestDto(40L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
-                        LocalDateTime.of(YEAR, 10, 13, 17, 0))
+                        LocalDateTime.of(YEAR, 10, 13, 17, 0)),
+                new DueDateCalculatorTestDto(0L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0)),
+                new DueDateCalculatorTestDto(12L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                        LocalDateTime.of(YEAR, 10, 10, 13, 0))
         );
     }
 
     @ParameterizedTest
     @MethodSource("resolveIssueLessThanWorkingWeekProvider")
-    void resolveIssueLessThanWorkingWeek(Long turnaroundTime, LocalDateTime submitDate, LocalDateTime resolvedIssueTime) {
-        assertThat(createDueDateCalculator(submitDate, turnaroundTime).calculate()).isEqualTo(resolvedIssueTime);
+    void resolveIssueLessThanWorkingWeek(DueDateCalculatorTestDto testDto) {
+        assertThat(
+                createDueDateCalculator(testDto.submitDate(), testDto.turnaroundTime()).calculate())
+                .isEqualTo(testDto.resolvedIssueTime());
     }
 
 
-    private static Stream<Arguments> resolveIssueMoreThanWorkingWeekProvider() {
+    private static Stream<DueDateCalculatorTestDto> resolveIssueMoreThanWorkingWeekProvider() {
         return Stream.of(
-                arguments(41L, LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                new DueDateCalculatorTestDto(41L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 16, 10, 0)),
-                arguments(49L, LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                new DueDateCalculatorTestDto(49L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 17, 10, 0)),
-                arguments(80L, LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                new DueDateCalculatorTestDto(80L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 20, 17, 0)),
-                arguments(81L, LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                new DueDateCalculatorTestDto(81L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 23, 10, 0)),
-                arguments(89L, LocalDateTime.of(YEAR, 10, 9, 9, 0),
-                        LocalDateTime.of(YEAR, 10, 24, 10, 0))
+                new DueDateCalculatorTestDto(89L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                        LocalDateTime.of(YEAR, 10, 24, 10, 0)),
+                new DueDateCalculatorTestDto(160L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                        LocalDateTime.of(YEAR, 11, 3, 17, 0)),
+                new DueDateCalculatorTestDto(163L,
+                        LocalDateTime.of(YEAR, 10, 9, 9, 0),
+                        LocalDateTime.of(YEAR, 11, 6, 12, 0))
         );
     }
 
 
     @ParameterizedTest
     @MethodSource("resolveIssueMoreThanWorkingWeekProvider")
-    void resolveIssueMoreThanWorkingWeek(Long turnaroundTime, LocalDateTime submitDate, LocalDateTime resolvedIssueTime) {
-        assertThat(createDueDateCalculator(submitDate, turnaroundTime).calculate()).isEqualTo(resolvedIssueTime);
+    void resolveIssueMoreThanWorkingWeek(DueDateCalculatorTestDto testDto) {
+        assertThat(createDueDateCalculator(testDto.submitDate(), testDto.turnaroundTime()).calculate())
+                .isEqualTo(testDto.resolvedIssueTime());
     }
 
 
     private DueDateCalculator createDueDateCalculator(LocalDateTime submitDate, Long turnaroundTime) {
-       return new DueDateCalculator(submitDate, turnaroundTime);
+        return new DueDateCalculator(submitDate, turnaroundTime);
     }
 
     private void createDueDateCalculator(LocalDateTime submitDate) {
