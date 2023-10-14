@@ -24,7 +24,6 @@ class DueDateCalculatorTest {
                 .isInstanceOf(SubmitDateNullException.class);
     }
 
-
     @Test
     void submitDateIsAfterFivePm() {
         assertThatThrownBy(() -> createDueDateCalculator(LocalDateTime.of(YEAR, 10, 9, 17, 1)))
