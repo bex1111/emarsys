@@ -26,7 +26,6 @@ public class DueDateCalculator {
         this.turnaroundTime = turnaroundTime;
     }
 
-
     public LocalDateTime calculate() {
         final var submitDateWithAdditionalHours = calculateAdditionalHours();
         final var submitDateWithAdditionalDay = calculateAdditionalDay(submitDateWithAdditionalHours);
