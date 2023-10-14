@@ -15,48 +15,54 @@ import static java.util.Objects.isNull;
 
 public class DueDateCalculator {
 
-    public LocalDateTime calculate(LocalDateTime submitDate, Long turnaroundTime) {
+    public static final int DAY_WORKING_HOURS = 8;
+    private final LocalDateTime submitDate;
+    private final Long turnaroundTime;
+
+    public DueDateCalculator(LocalDateTime submitDate, Long turnaroundTime) {
         validateSubmitDate(submitDate);
         validateTurnaroundTime(turnaroundTime);
-        LocalDateTime submitDateWithAdditionalHours = calculateSubmitDateWithAdditionalHours(submitDate, turnaroundTime);
-        return calculateSubmitDateWithAdditionalDay(turnaroundTime, submitDateWithAdditionalHours);
+        this.submitDate = submitDate;
+        this.turnaroundTime = turnaroundTime;
     }
 
-    private long calculateAdditionalHours(Long turnaroundTime) {
-        return turnaroundTime % 8;
+
+    public LocalDateTime calculate() {
+        final var submitDateWithAdditionalHours = calculateAdditionalHours();
+        final var submitDateWithAdditionalDay = calculateAdditionalDay(submitDateWithAdditionalHours);
+        return resolveWeekend(submitDateWithAdditionalDay);
     }
 
-    private LocalDateTime calculateSubmitDateWithAdditionalHours(LocalDateTime submitDate, Long turnaroundTime) {
-        final long hours = calculateAdditionalHours(turnaroundTime);
-        return submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? 8 : hours);
+    private long calculateAdditionalHoursThatDay() {
+        return turnaroundTime % DAY_WORKING_HOURS;
     }
 
-    private LocalDateTime calculateSubmitDateWithAdditionalDay(Long turnaroundTime, LocalDateTime submitDateWithAdditionalHours) {
-        var submitDateWithAdditionalDay = calculateAdditionalDay(turnaroundTime, submitDateWithAdditionalHours);
-        return resolveWeekend(turnaroundTime, submitDateWithAdditionalDay);
+    private LocalDateTime calculateAdditionalHours() {
+        final var hours = calculateAdditionalHoursThatDay();
+        return submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? DAY_WORKING_HOURS : hours);
     }
 
-    private LocalDateTime resolveWeekend(Long turnaroundTime, LocalDateTime submitDateWithAdditionalDay) {
-        long additionalDay = 0L;
-        if (turnaroundTime > 40) {
-            additionalDay += (turnaroundTime / 40) * 2;
+    private LocalDateTime resolveWeekend(LocalDateTime submitDateWithAdditionalDay) {
+        final var weekWorkingHours = 40;
+        var additionalDay = 0L;
+        if (turnaroundTime > weekWorkingHours) {
+            additionalDay += (turnaroundTime / weekWorkingHours) * 2;
         }
-        if (turnaroundTime%40==0 && turnaroundTime>40)
-        {
+        if (turnaroundTime % weekWorkingHours == 0 && turnaroundTime > weekWorkingHours) {
             additionalDay -= 2;
         }
         return submitDateWithAdditionalDay.plusDays(additionalDay);
     }
 
-    private LocalDateTime calculateAdditionalDay(Long turnaroundTime, LocalDateTime submitDateWithAdditionalHours) {
-        final long hours = calculateAdditionalHours(turnaroundTime);
-        if (turnaroundTime <= 8) {
+    private LocalDateTime calculateAdditionalDay(LocalDateTime submitDateWithAdditionalHours) {
+        final var hours = calculateAdditionalHoursThatDay();
+        if (turnaroundTime <= DAY_WORKING_HOURS) {
             return submitDateWithAdditionalHours.plusDays(0);
         }
         if (hours == 0) {
-            return submitDateWithAdditionalHours.plusDays(turnaroundTime / 8 - 1);
+            return submitDateWithAdditionalHours.plusDays(turnaroundTime / DAY_WORKING_HOURS - 1);
         }
-        return submitDateWithAdditionalHours.plusDays(turnaroundTime / 8);
+        return submitDateWithAdditionalHours.plusDays(turnaroundTime / DAY_WORKING_HOURS);
     }
 
     private void validateSubmitDate(LocalDateTime submitDate) {
