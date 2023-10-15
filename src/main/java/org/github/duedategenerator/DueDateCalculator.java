@@ -51,16 +51,16 @@ public class DueDateCalculator {
     private LocalDateTime calculateAdditionalHoursSkipOverTime() {
         LocalDateTime skipOvertimeLocalDateTime= submitDate.plusDays(1);
         LocalDateTime startHourLocalDateTime= skipOvertimeLocalDateTime.withHour(9);
-        return startHourLocalDateTime.plusHours((submitDate.getHour() + calculateAdditionalHoursThatDayForOvertime()) - 17);
+        return startHourLocalDateTime.plusHours((submitDate.getHour() + calculateAdditionalHoursWhenHasPotientialOverTime()) - 17);
     }
 
-    private long calculateAdditionalHoursThatDayForOvertime() {
+    private long calculateAdditionalHoursWhenHasPotientialOverTime() {
         long calculateAdditionalHoursThatDay = calculateAdditionalHoursThatDay();
         return turnaroundTime > 0 && calculateAdditionalHoursThatDay == 0 ? 8L : calculateAdditionalHoursThatDay;
     }
 
     private boolean isOvertime() {
-        return submitDate.getHour() + calculateAdditionalHoursThatDayForOvertime() > 17;
+        return submitDate.getHour() + calculateAdditionalHoursWhenHasPotientialOverTime() > 17;
     }
 
     private LocalDateTime resolveWeekend(LocalDateTime submitDateWithAdditionalDay) {
