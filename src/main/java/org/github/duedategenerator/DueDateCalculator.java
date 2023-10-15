@@ -19,11 +19,11 @@ public class DueDateCalculator {
     private final LocalDateTime submitDate;
     private final Long turnaroundTime;
 
-    public DueDateCalculator(LocalDateTime submitDate, Long turnaroundTime) {
+    public DueDateCalculator(LocalDateTime submitDate, Long turnaroundTimeInHours) {
         validateSubmitDate(submitDate);
-        validateTurnaroundTime(turnaroundTime);
+        validateTurnaroundTime(turnaroundTimeInHours);
         this.submitDate = submitDate;
-        this.turnaroundTime = turnaroundTime;
+        this.turnaroundTime = turnaroundTimeInHours;
     }
 
     public LocalDateTime calculate() {
@@ -37,8 +37,30 @@ public class DueDateCalculator {
     }
 
     private LocalDateTime calculateAdditionalHours() {
+        if (isOvertime()) {
+            return calculateAdditionalHoursSkipOverTime();
+        }
+        return calculateAdditionalHoursWhenNotHaveOvertime();
+    }
+
+    private LocalDateTime calculateAdditionalHoursWhenNotHaveOvertime() {
         final var hours = calculateAdditionalHoursThatDay();
         return submitDate.plusHours(turnaroundTime > 0 && hours == 0 ? DAY_WORKING_HOURS : hours);
+    }
+
+    private LocalDateTime calculateAdditionalHoursSkipOverTime() {
+        LocalDateTime skipOvertimeLocalDateTime= submitDate.plusDays(1);
+        LocalDateTime startHourLocalDateTime= skipOvertimeLocalDateTime.withHour(9);
+        return startHourLocalDateTime.plusHours((submitDate.getHour() + calculateAdditionalHoursThatDayForOvertime()) - 17);
+    }
+
+    private long calculateAdditionalHoursThatDayForOvertime() {
+        long calculateAdditionalHoursThatDay = calculateAdditionalHoursThatDay();
+        return turnaroundTime > 0 && calculateAdditionalHoursThatDay == 0 ? 8L : calculateAdditionalHoursThatDay;
+    }
+
+    private boolean isOvertime() {
+        return submitDate.getHour() + calculateAdditionalHoursThatDayForOvertime() > 17;
     }
 
     private LocalDateTime resolveWeekend(LocalDateTime submitDateWithAdditionalDay) {
@@ -91,6 +113,6 @@ public class DueDateCalculator {
     }
 
     private boolean isAfterWorkHour(LocalDateTime submitDate) {
-        return submitDate.getHour() >= 17 && submitDate.getMinute() != 0;
+        return submitDate.getHour() == 17 && submitDate.getMinute() != 0 || submitDate.getHour() > 17;
     }
 }

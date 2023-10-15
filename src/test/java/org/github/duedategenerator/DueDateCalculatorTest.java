@@ -31,6 +31,12 @@ class DueDateCalculatorTest {
     }
 
     @Test
+    void submitDateIsAfterFivePmRoundHour() {
+        assertThatThrownBy(() -> createDueDateCalculator(LocalDateTime.of(YEAR, 10, 9, 18, 0)))
+                .isInstanceOf(OutOfWorkingHourException.class);
+    }
+
+    @Test
     void submitDateIsAfterNineAm() {
         assertThatThrownBy(() -> createDueDateCalculator(LocalDateTime.of(YEAR, 10, 9, 8, 59)))
                 .isInstanceOf(OutOfWorkingHourException.class);
@@ -59,6 +65,12 @@ class DueDateCalculatorTest {
 
     private static Stream<DueDateCalculatorTestDto> resolveIssueLessThanWorkingWeekProvider() {
         return Stream.of(
+                new DueDateCalculatorTestDto(8L,
+                        LocalDateTime.of(YEAR, 10, 9, 17, 0),
+                        LocalDateTime.of(YEAR, 10, 10, 17, 0)),
+                new DueDateCalculatorTestDto(7L,
+                        LocalDateTime.of(YEAR, 10, 9, 15, 0),
+                        LocalDateTime.of(YEAR, 10, 10, 14, 0)),
                 new DueDateCalculatorTestDto(8L,
                         LocalDateTime.of(YEAR, 10, 9, 9, 0),
                         LocalDateTime.of(YEAR, 10, 9, 17, 0)),
